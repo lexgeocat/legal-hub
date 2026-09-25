@@ -2247,7 +2247,7 @@ const PAYLOAD = {
             shown += catItems.length;
 
             const section = document.createElement("section");
-            section.className = "category";
+            section.className = "category collapsed";
             const head = document.createElement("div");
             head.className = "category-head";
             head.innerHTML =
@@ -2258,6 +2258,12 @@ const PAYLOAD = {
               (catItems.length === cat.total ? "" : " de " + cat.total) +
               "</span>";
             section.appendChild(head);
+
+          // Click header to toggle collapse
+          head.addEventListener('click', () => {
+            const isCollapsed = section.classList.toggle('collapsed');
+            // No additional state needed; CSS handles hiding items
+          });
 
             if (cat.base_legal) {
               const basis = document.createElement("div");

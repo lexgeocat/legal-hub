@@ -328,6 +328,17 @@
       }
 
       /* ---------- Category sections ---------- */
+
+/* Collapse behavior for categories */
+.category.collapsed .category-basis,
+.category.collapsed .subcategory-label,
+.category.collapsed .item {
+  display: none;
+}
+
+.category-head {
+  cursor: pointer;
+}
       .category {
         margin-top: 38px;
       }
