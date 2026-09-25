@@ -2215,6 +2215,17 @@ const PAYLOAD = {
         }
 
         const openIds = new Set();
+        // Por defecto las categorías van colapsadas; se abren solas si hay
+        // búsqueda o filtro activo, salvo que el usuario las toque a mano
+        // (en cuyo caso su elección manda, sin importar el contexto).
+        const catOpenOverride = new Map();
+
+        function isCatOpen(cat) {
+          if (catOpenOverride.has(cat.nombre)) {
+            return catOpenOverride.get(cat.nombre);
+          }
+          return query.trim() !== "" || activeCat !== "Todos";
+        }
 
         function itemMatches(it, q) {
           if (!q) return true;
@@ -2247,23 +2258,25 @@ const PAYLOAD = {
             shown += catItems.length;
 
             const section = document.createElement("section");
-            section.className = "category collapsed";
-            const head = document.createElement("div");
+            const isOpenCat = isCatOpen(cat);
+            section.className = "category" + (isOpenCat ? " open" : "");
+
+            const head = document.createElement("button");
+            head.type = "button";
             head.className = "category-head";
+            head.setAttribute("aria-expanded", isOpenCat ? "true" : "false");
             head.innerHTML =
-              "<h2>" +
+              '<span class="cat-chev"></span><h2>' +
               escapeHtml(cat.nombre) +
               '</h2><span class="count">' +
               catItems.length +
               (catItems.length === cat.total ? "" : " de " + cat.total) +
               "</span>";
+            head.addEventListener("click", () => {
+              catOpenOverride.set(cat.nombre, !isCatOpen(cat));
+              render();
+            });
             section.appendChild(head);
-
-          // Click header to toggle collapse
-          head.addEventListener('click', () => {
-            const isCollapsed = section.classList.toggle('collapsed');
-            // No additional state needed; CSS handles hiding items
-          });
 
             if (cat.base_legal) {
               const basis = document.createElement("div");
@@ -2272,89 +2285,95 @@ const PAYLOAD = {
               section.appendChild(basis);
             }
 
-            let curSub = null;
-            catItems.forEach((it) => {
-              if (it.subcategoria && it.subcategoria !== curSub) {
-                curSub = it.subcategoria;
-                const subEl = document.createElement("div");
-                subEl.className = "subcategory-label";
-                subEl.textContent = curSub;
-                section.appendChild(subEl);
-              } else if (!it.subcategoria) {
-                curSub = null;
-              }
+            if (isOpenCat) {
+              let curSub = null;
+              catItems.forEach((it) => {
+                if (it.subcategoria && it.subcategoria !== curSub) {
+                  curSub = it.subcategoria;
+                  const subEl = document.createElement("div");
+                  subEl.className = "subcategory-label";
+                  subEl.textContent = curSub;
+                  section.appendChild(subEl);
+                } else if (!it.subcategoria) {
+                  curSub = null;
+                }
 
-              const wrap = document.createElement("div");
-              wrap.className = "item" + (openIds.has(it.id) ? " open" : "");
-              wrap.dataset.id = it.id;
+                const wrap = document.createElement("div");
+                wrap.className = "item" + (openIds.has(it.id) ? " open" : "");
+                wrap.dataset.id = it.id;
 
-              const row = document.createElement("button");
-              row.className = "item-row";
-              row.setAttribute(
-                "aria-expanded",
-                openIds.has(it.id) ? "true" : "false",
-              );
+                const row = document.createElement("button");
+                row.className = "item-row";
+                row.setAttribute(
+                  "aria-expanded",
+                  openIds.has(it.id) ? "true" : "false",
+                );
 
-              const chev = document.createElement("span");
-              chev.className = "chev";
-              row.appendChild(chev);
+                const chev = document.createElement("span");
+                chev.className = "chev";
+                row.appendChild(chev);
 
-              const name = document.createElement("span");
-              name.className = "item-name";
-              name.innerHTML = highlight(it.detalle, q);
-              row.appendChild(name);
+                const name = document.createElement("span");
+                name.className = "item-name";
+                name.innerHTML = highlight(it.detalle, q);
+                row.appendChild(name);
 
-              if (isDupItem(it)) {
-                const dup = document.createElement("span");
-                dup.className = "dup-flag";
-                dup.textContent = "dup.";
-                row.appendChild(dup);
-              }
+                if (isDupItem(it)) {
+                  const dup = document.createElement("span");
+                  dup.className = "dup-flag";
+                  dup.textContent = "dup.";
+                  row.appendChild(dup);
+                }
 
-              if (it.porcentaje_adicional && it.porcentaje_adicional !== "—") {
-                const pct = document.createElement("span");
-                pct.className = "pct-dot";
-                pct.textContent = "+ %";
-                row.appendChild(pct);
-              }
+                if (
+                  it.porcentaje_adicional &&
+                  it.porcentaje_adicional !== "—"
+                ) {
+                  const pct = document.createElement("span");
+                  pct.className = "pct-dot";
+                  pct.textContent = "+ %";
+                  row.appendChild(pct);
+                }
 
-              const amt = document.createElement("span");
-              amt.className = "amount";
-              amt.innerHTML = it.monto_la_paz_bs + '<span class="bs">Bs</span>';
-              row.appendChild(amt);
+                const amt = document.createElement("span");
+                amt.className = "amount";
+                amt.innerHTML =
+                  it.monto_la_paz_bs + '<span class="bs">Bs</span>';
+                row.appendChild(amt);
 
-              row.addEventListener("click", () => {
-                const isOpen = wrap.classList.toggle("open");
-                row.setAttribute("aria-expanded", isOpen ? "true" : "false");
-                if (isOpen) openIds.add(it.id);
-                else openIds.delete(it.id);
+                row.addEventListener("click", () => {
+                  const isOpen = wrap.classList.toggle("open");
+                  row.setAttribute("aria-expanded", isOpen ? "true" : "false");
+                  if (isOpen) openIds.add(it.id);
+                  else openIds.delete(it.id);
+                });
+
+                wrap.appendChild(row);
+
+                const detail = document.createElement("div");
+                detail.className = "item-detail";
+                detail.innerHTML =
+                  '<div class="block"><span class="label">¿Qué es?</span>' +
+                  escapeHtml(it.que_es) +
+                  "</div>" +
+                  '<div class="block"><span class="label">¿Cuándo aplica?</span>' +
+                  escapeHtml(it.cuando_aplica) +
+                  "</div>" +
+                  '<div class="fee-line">' +
+                  '<span><span class="k">Honorario mínimo La Paz — </span><span class="v">Bs ' +
+                  it.monto_la_paz_bs +
+                  "</span></span>" +
+                  (it.porcentaje_adicional && it.porcentaje_adicional !== "—"
+                    ? '<span><span class="k">Regla adicional — </span><span class="v">' +
+                      escapeHtml(it.porcentaje_adicional) +
+                      "</span></span>"
+                    : "") +
+                  "</div>";
+                wrap.appendChild(detail);
+
+                section.appendChild(wrap);
               });
-
-              wrap.appendChild(row);
-
-              const detail = document.createElement("div");
-              detail.className = "item-detail";
-              detail.innerHTML =
-                '<div class="block"><span class="label">¿Qué es?</span>' +
-                escapeHtml(it.que_es) +
-                "</div>" +
-                '<div class="block"><span class="label">¿Cuándo aplica?</span>' +
-                escapeHtml(it.cuando_aplica) +
-                "</div>" +
-                '<div class="fee-line">' +
-                '<span><span class="k">Honorario mínimo La Paz — </span><span class="v">Bs ' +
-                it.monto_la_paz_bs +
-                "</span></span>" +
-                (it.porcentaje_adicional && it.porcentaje_adicional !== "—"
-                  ? '<span><span class="k">Regla adicional — </span><span class="v">' +
-                    escapeHtml(it.porcentaje_adicional) +
-                    "</span></span>"
-                  : "") +
-                "</div>";
-              wrap.appendChild(detail);
-
-              section.appendChild(wrap);
-            });
+            }
 
             catRoot.appendChild(section);
           });
@@ -2449,10 +2468,51 @@ const PAYLOAD = {
 /* ---------- PWA: instalación y service worker ---------- */
 (function () {
   const installBtn = document.getElementById("installBtn");
+  const installHelp = document.getElementById("installHelp");
   let deferredPrompt = null;
 
+  function isStandalone() {
+    return (
+      window.matchMedia("(display-mode: standalone)").matches ||
+      window.navigator.standalone === true // Safari iOS
+    );
+  }
+
+  function helpMessage() {
+    const ua = navigator.userAgent || "";
+    const isIOS = /iphone|ipad|ipod/i.test(ua) && !window.MSStream;
+    const isAndroid = /android/i.test(ua);
+
+    if (isIOS) {
+      return (
+        "<strong>Para instalarla en iPhone/iPad:</strong> tocá el ícono " +
+        "de compartir (el cuadrado con la flecha) y elegí " +
+        "«Añadir a pantalla de inicio»."
+      );
+    }
+    if (isAndroid) {
+      return (
+        "<strong>Para instalarla en Android:</strong> abrí el menú ⋮ de " +
+        "arriba a la derecha del navegador y tocá «Instalar aplicación» " +
+        "(o «Añadir a pantalla de inicio»). Si no aparece esa opción, " +
+        "asegurate de estar viendo el sitio ya publicado por https " +
+        "(por ejemplo en GitHub Pages), no un archivo local."
+      );
+    }
+    return (
+      "<strong>Para instalarla:</strong> buscá la opción «Instalar " +
+      "aplicación» o «Añadir a pantalla de inicio» en el menú del " +
+      "navegador."
+    );
+  }
+
+  // Si ya se abrió como app instalada, no tiene sentido ofrecer instalarla.
+  if (installBtn && !isStandalone()) {
+    installBtn.hidden = false;
+  }
+
   // Chrome/Android disparan este evento cuando la app cumple los
-  // requisitos para instalarse; mostramos entonces el botón "Instalar".
+  // requisitos para instalarse; habilita el prompt nativo del navegador.
   window.addEventListener("beforeinstallprompt", (event) => {
     event.preventDefault();
     deferredPrompt = event;
@@ -2461,24 +2521,49 @@ const PAYLOAD = {
 
   if (installBtn) {
     installBtn.addEventListener("click", async () => {
-      if (!deferredPrompt) return;
-      installBtn.hidden = true;
-      deferredPrompt.prompt();
-      try {
-        await deferredPrompt.userChoice;
-      } finally {
-        deferredPrompt = null;
+      if (installHelp && !installHelp.hidden) {
+        installHelp.hidden = true;
+        return;
+      }
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        try {
+          await deferredPrompt.userChoice;
+        } finally {
+          deferredPrompt = null;
+        }
+        return;
+      }
+      // El navegador todavía no ofreció el prompt automático (puede tardar,
+      // o el navegador no lo soporta, como Safari): mostramos el paso a
+      // paso manual en su lugar.
+      if (installHelp) {
+        installHelp.innerHTML = helpMessage();
+        installHelp.hidden = false;
+      }
+    });
+
+    document.addEventListener("click", (event) => {
+      if (
+        installHelp &&
+        !installHelp.hidden &&
+        !installBtn.contains(event.target) &&
+        !installHelp.contains(event.target)
+      ) {
+        installHelp.hidden = true;
       }
     });
   }
 
   window.addEventListener("appinstalled", () => {
     if (installBtn) installBtn.hidden = true;
+    if (installHelp) installHelp.hidden = true;
     deferredPrompt = null;
   });
 
   // El service worker habilita el uso offline y es uno de los requisitos
-  // que Chrome exige para poder "instalar" el sitio como app.
+  // que Chrome exige para poder "instalar" el sitio como app. Requiere
+  // https (o localhost): en un archivo abierto local (file://) no corre.
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
       navigator.serviceWorker.register("sw.js").catch(() => {

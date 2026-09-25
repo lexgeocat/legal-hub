@@ -144,6 +144,10 @@
         align-items: center;
         gap: 10px;
       }
+      .install-wrap {
+        position: relative;
+        flex: 0 0 auto;
+      }
       .install-btn {
         display: inline-flex;
         align-items: center;
@@ -170,6 +174,28 @@
       }
       .install-btn[hidden] {
         display: none;
+      }
+      .install-help {
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        z-index: 30;
+        width: 230px;
+        max-width: calc(100vw - 40px);
+        padding: 12px 13px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: var(--paper-raised);
+        color: var(--ink-soft);
+        font-size: 12.5px;
+        line-height: 1.55;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+      }
+      .install-help[hidden] {
+        display: none;
+      }
+      .install-help strong {
+        color: var(--ink);
       }
       .theme-toggle {
         display: inline-flex;
@@ -328,30 +354,34 @@
       }
 
       /* ---------- Category sections ---------- */
-
-/* Collapse behavior for categories */
-.category.collapsed .category-basis,
-.category.collapsed .subcategory-label,
-.category.collapsed .item {
-  display: none;
-}
-
-.category-head {
-  cursor: pointer;
-}
       .category {
         margin-top: 38px;
       }
       .category-head {
         display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        gap: 12px;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        text-align: left;
         border-bottom: 1px solid var(--maroon);
-        padding-bottom: 8px;
-        margin-bottom: 4px;
+        padding: 6px 2px 8px 2px;
+        margin: 0 0 4px;
+      }
+      .cat-chev {
+        flex: 0 0 auto;
+        width: 9px;
+        height: 9px;
+        border-right: 1.5px solid var(--maroon-soft);
+        border-bottom: 1.5px solid var(--maroon-soft);
+        transform: rotate(-45deg);
+        transition: transform 0.15s ease;
+      }
+      .category.open .cat-chev {
+        transform: rotate(45deg);
       }
       .category-head h2 {
+        flex: 1;
+        min-width: 0;
         font-family: "Fraunces", serif;
         font-weight: 600;
         font-size: 19px;
