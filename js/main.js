@@ -1,225 +1,429 @@
-import { CATEGORIES } from './data/categories.js';
-import { CIVIL_DETAILS } from './data/civil_details.js';
-import { norm, highlight } from './utils.js';
-import { buildDetailHtml } from './ui-components.js';
+import { CATEGORIES } from "./data/categories.js";
+import { CIVIL_DETAILS } from "./data/civil_details.js";
+import { norm, tokenize, highlight, escapeHtml } from "./utils.js";
+import { buildDetailHtml } from "./ui-components.js";
 
-// Materias imports
-import { items as constitutional } from './data/materias/constitucional.js';
-import { items as civil } from './data/materias/civil.js';
-import { items as penal } from './data/materias/penal.js';
-import { items as familiar } from './data/materias/familiar.js';
-import { items as comercial } from './data/materias/comercial.js';
-import { items as trabajo } from './data/materias/trabajo.js';
-import { items as tributaria } from './data/materias/tributaria.js';
-import { items as agroambiental } from './data/materias/agroambiental.js';
-import { items as minera } from './data/materias/minera.js';
-import { items as administrativa } from './data/materias/administrativa.js';
-import { items as tramites } from './data/materias/tramites.js';
-import { items as memoriales } from './data/materias/memoriales.js';
-import { items as sociales } from './data/materias/sociales.js';
-import { items as aduaneros } from './data/materias/aduaneros.js';
+// Materias
+import { items as constitutional } from "./data/materias/constitucional.js";
+import { items as civil } from "./data/materias/civil.js";
+import { items as penal } from "./data/materias/penal.js";
+import { items as familiar } from "./data/materias/familiar.js";
+import { items as comercial } from "./data/materias/comercial.js";
+import { items as trabajo } from "./data/materias/trabajo.js";
+import { items as tributaria } from "./data/materias/tributaria.js";
+import { items as agroambiental } from "./data/materias/agroambiental.js";
+import { items as minera } from "./data/materias/minera.js";
+import { items as administrativa } from "./data/materias/administrativa.js";
+import { items as tramites } from "./data/materias/tramites.js";
+import { items as memoriales } from "./data/materias/memoriales.js";
+import { items as sociales } from "./data/materias/sociales.js";
+import { items as aduaneros } from "./data/materias/aduaneros.js";
 
 const ALL_ITEMS = [
-    ...constitutional,
-    ...civil,
-    ...penal,
-    ...familiar,
-    ...comercial,
-    ...trabajo,
-    ...tributaria,
-    ...agroambiental,
-    ...minera,
-    ...administrativa,
-    ...tramites,
-    ...memoriales,
-    ...sociales,
-    ...aduaneros,
+  ...constitutional,
+  ...civil,
+  ...penal,
+  ...familiar,
+  ...comercial,
+  ...trabajo,
+  ...tributaria,
+  ...agroambiental,
+  ...minera,
+  ...administrativa,
+  ...tramites,
+  ...memoriales,
+  ...sociales,
+  ...aduaneros,
 ];
 
-(function () {
-  const items = ALL_ITEMS;
-  const categorias = CATEGORIES;
+// Nombres cortos para las pastillas de filtro (por número de materia)
+const SHORT_LABELS = {
+  1: "Constitucional",
+  2: "Civil",
+  3: "Penal",
+  4: "Familiar",
+  5: "Comercial",
+  6: "Trabajo y Seg. Social",
+  7: "Tributaria",
+  8: "Agroambiental",
+  9: "Minera",
+  10: "Administrativa",
+  11: "Trámites en general",
+  12: "Memoriales",
+  13: "Asuntos sociales",
+  14: "Tributario y Aduanero",
+};
 
-  const chipRow = document.getElementById("chipRow");
-  const catRoot = document.getElementById("categories");
-  const searchInput = document.getElementById("search");
-  const resultCount = document.getElementById("resultCount");
-  const emptyState = document.getElementById("emptyState");
+const $ = (id) => document.getElementById(id);
+
+function init() {
+  const chipRow = $("chipRow");
+  const catRoot = $("categories");
+  const searchInput = $("search");
+  const clearBtn = $("clearSearch");
+  const resultCount = $("resultCount");
+  const emptyState = $("emptyState");
+  const notice = $("notice");
+  if (!chipRow || !catRoot || !searchInput) return;
+
+  const items = ALL_ITEMS;
+
+  // Los totales se calculan con los datos reales (antes estaban a mano y no coincidían).
+  const categorias = CATEGORIES.map((c) => ({
+    ...c,
+    total: items.filter((it) => it.categoria === c.nombre).length,
+  }));
+
+  // Texto de búsqueda de cada concepto, calculado una sola vez.
+  const HAY = new Map(
+    items.map((it) => [
+      it.id,
+      norm(
+        [
+          it.detalle,
+          it.que_es,
+          it.cuando_aplica,
+          it.subcategoria,
+          it.categoria,
+          it.porcentaje_adicional !== "—" ? it.porcentaje_adicional : "",
+          it.monto_la_paz_bs,
+          String(it.monto_la_paz_bs).replace(/\./g, ""),
+        ]
+          .filter(Boolean)
+          .join(" "),
+      ),
+    ]),
+  );
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const isWide = () => window.matchMedia("(min-width: 900px)").matches;
+  const behavior = () => (reduceMotion ? "auto" : "smooth");
 
   let activeCat = "Todos";
-  let query = "";
-
-  function buildChips() {
-    const all = document.createElement("button");
-    all.className = "chip active";
-    all.dataset.cat = "Todos";
-    all.innerHTML = 'Todos <span class="n">' + items.length + "</span>";
-    chipRow.appendChild(all);
-    categorias.forEach((c) => {
-      const b = document.createElement("button");
-      b.className = "chip";
-      b.dataset.cat = c.nombre;
-      const short = c.nombre.replace(/^\\d+\\.\\s*/, "");
-      b.innerHTML = short + ' <span class="n">' + c.total + "</span>";
-      chipRow.appendChild(b);
-    });
-    chipRow.addEventListener("click", (e) => {
-      const btn = e.target.closest(".chip");
-      if (!btn) return;
-      activeCat = btn.dataset.cat;
-      [...chipRow.children].forEach((c) =>
-        c.classList.toggle("active", c === btn),
-      );
-      render();
-    });
-  }
-
+  let rawQuery = "";
+  let toks = [];
   const openIds = new Set();
   const catOpenOverride = new Map();
 
+  const matches = (it) => toks.every((t) => HAY.get(it.id).includes(t));
+  const hasPct = (it) => it.porcentaje_adicional && it.porcentaje_adicional !== "—";
+
   function isCatOpen(cat) {
-    if (catOpenOverride.has(cat.nombre)) {
-      return catOpenOverride.get(cat.nombre);
-    }
-    return query.trim() !== "" || activeCat !== "Todos";
+    if (catOpenOverride.has(cat.nombre)) return catOpenOverride.get(cat.nombre);
+    return toks.length > 0 || activeCat !== "Todos";
   }
 
-  function itemMatches(it, q) {
-    if (!q) return true;
-    return (
-      norm(it.detalle).includes(q) ||
-      norm(it.que_es).includes(q) ||
-      norm(it.cuando_aplica).includes(q) ||
-      norm(it.subcategoria || "").includes(q)
+  function el(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text != null) node.textContent = text;
+    return node;
+  }
+
+  /* ---------- Chips de materia ---------- */
+  function chipLabel(nombre) {
+    const m = nombre.match(/^(\d+)\.\s*(.*)$/);
+    if (!m) return nombre;
+    return SHORT_LABELS[Number(m[1])] || m[2];
+  }
+
+  function buildChips() {
+    const frag = document.createDocumentFragment();
+    const make = (cat, label) => {
+      const b = el("button", "chip");
+      b.type = "button";
+      b.dataset.cat = cat;
+      b.append(el("span", "lbl", label), el("span", "n"));
+      return b;
+    };
+    frag.appendChild(make("Todos", "Todos"));
+    categorias.forEach((c) => frag.appendChild(make(c.nombre, chipLabel(c.nombre))));
+    chipRow.innerHTML = "";
+    chipRow.appendChild(frag);
+
+    chipRow.addEventListener("click", (e) => {
+      const btn = e.target.closest(".chip");
+      if (!btn) return;
+      const changed = activeCat !== btn.dataset.cat;
+      activeCat = btn.dataset.cat;
+      catOpenOverride.clear();
+      render();
+      centerChip(btn);
+      if (changed) scrollToResults();
+    });
+  }
+
+  function updateChips(counts, total) {
+    chipRow.querySelectorAll(".chip").forEach((chip) => {
+      const cat = chip.dataset.cat;
+      const n = cat === "Todos" ? total : counts.get(cat) || 0;
+      chip.querySelector(".n").textContent = n;
+      chip.classList.toggle("active", cat === activeCat);
+      chip.classList.toggle("is-empty", n === 0 && cat !== "Todos");
+      chip.setAttribute("aria-pressed", cat === activeCat ? "true" : "false");
+    });
+  }
+
+  // En móvil la fila de chips se desplaza sola para dejar visible el elegido.
+  function centerChip(btn) {
+    if (isWide()) return;
+    const row = chipRow.getBoundingClientRect();
+    const r = btn.getBoundingClientRect();
+    const delta = r.left + r.width / 2 - (row.left + row.width / 2);
+    chipRow.scrollBy({ left: delta, behavior: behavior() });
+  }
+
+  // Si el usuario está muy abajo, lo sube al inicio de los resultados.
+  function scrollToResults() {
+    const controlsEl = document.querySelector(".controls");
+    const wide = isWide();
+    const anchor = wide ? document.querySelector(".content") || catRoot : catRoot;
+    const offset = wide ? 20 : (controlsEl ? controlsEl.offsetHeight : 0) + 8;
+    const top = anchor.getBoundingClientRect().top;
+    if (top < offset) {
+      window.scrollTo({ top: top + window.scrollY - offset, behavior: behavior() });
+    }
+  }
+
+  /* ---------- Detalle (se arma solo al abrir) ---------- */
+  function fillDetail(node, it) {
+    if (node.dataset.ready) return;
+    try {
+      node.innerHTML = buildDetailHtml(it, CIVIL_DETAILS);
+      node.dataset.ready = "1";
+    } catch (err) {
+      console.error("No se pudo armar el detalle del ítem", it.id, err);
+      node.textContent = "No se pudo cargar el detalle de este concepto.";
+    }
+  }
+
+  function buildItem(it) {
+    const isOpen = openIds.has(it.id);
+    const wrap = el("div", "item" + (isOpen ? " open" : ""));
+    wrap.dataset.id = String(it.id);
+
+    const detailId = "detalle-" + it.id;
+    const row = el("button", "item-row");
+    row.type = "button";
+    row.setAttribute("aria-expanded", String(isOpen));
+    row.setAttribute("aria-controls", detailId);
+
+    const name = el("span", "item-name");
+    name.innerHTML = highlight(it.detalle, toks);
+    row.append(el("span", "chev"), name);
+
+    if (hasPct(it)) {
+      const pct = el("span", "pct-dot", "+ % adicional");
+      pct.title = it.porcentaje_adicional;
+      row.appendChild(pct);
+    }
+
+    const amt = el("span", "amount");
+    amt.innerHTML = '<span class="bs">Bs</span>' + escapeHtml(it.monto_la_paz_bs);
+    row.appendChild(amt);
+
+    const detail = el("div", "item-detail");
+    detail.id = detailId;
+    if (isOpen) fillDetail(detail, it);
+
+    row.addEventListener("click", () => {
+      const open = wrap.classList.toggle("open");
+      row.setAttribute("aria-expanded", String(open));
+      if (open) {
+        openIds.add(it.id);
+        fillDetail(detail, it);
+      } else {
+        openIds.delete(it.id);
+      }
+    });
+
+    wrap.append(row, detail);
+    return wrap;
+  }
+
+  function buildCategory(cat, catItems) {
+    const open = isCatOpen(cat);
+    const section = el("section", "category" + (open ? " open" : ""));
+
+    const head = el("button", "category-head");
+    head.type = "button";
+    head.setAttribute("aria-expanded", String(open));
+    const m = cat.nombre.match(/^(\d+)\.\s*(.*)$/);
+    head.append(
+      el("span", "cat-num", m ? m[1] : "•"),
+      el("h2", null, m ? m[2] : cat.nombre),
+      el(
+        "span",
+        "count",
+        catItems.length === cat.total
+          ? String(catItems.length)
+          : catItems.length + " de " + cat.total,
+      ),
+      el("span", "cat-chev"),
     );
+    head.addEventListener("click", () => {
+      catOpenOverride.set(cat.nombre, !isCatOpen(cat));
+      render();
+    });
+    section.appendChild(head);
+
+    if (!open) return section;
+
+    if (cat.base_legal) section.appendChild(el("div", "category-basis", cat.base_legal));
+
+    let curSub = null;
+    catItems.forEach((it) => {
+      if (it.subcategoria && it.subcategoria !== curSub) {
+        curSub = it.subcategoria;
+        section.appendChild(el("div", "subcategory-label", curSub));
+      } else if (!it.subcategoria) {
+        curSub = null;
+      }
+      section.appendChild(buildItem(it));
+    });
+    return section;
+  }
+
+  /* ---------- Render ---------- */
+  function renderEmpty(totalMatches) {
+    const q = rawQuery.trim();
+    if (activeCat !== "Todos" && totalMatches > 0) {
+      emptyState.innerHTML =
+        "<p><strong>Sin resultados en esta materia.</strong></p>" +
+        "<p>Hay " + totalMatches + " en otras materias.</p>" +
+        '<button type="button" class="link-btn" data-action="all">Ver todas las materias</button>';
+    } else if (q) {
+      emptyState.innerHTML =
+        "<p><strong>Sin resultados para “" + escapeHtml(q) + "”.</strong></p>" +
+        "<p>Prueba con menos palabras o revisa la ortografía.</p>" +
+        '<button type="button" class="link-btn" data-action="clear">Borrar búsqueda</button>';
+    } else {
+      emptyState.innerHTML = "<p><strong>No hay conceptos para mostrar.</strong></p>";
+    }
   }
 
   function render() {
-    const q = norm(query.trim());
-    catRoot.innerHTML = "";
-    let shown = 0;
-
-    const catsToShow = categorias.filter(
-      (c) => activeCat === "Todos" || c.nombre === activeCat,
-    );
-
-    catsToShow.forEach((cat) => {
-      const catItems = items.filter(
-        (it) => it.categoria === cat.nombre && itemMatches(it, q),
-      );
-      if (catItems.length === 0) return;
-      shown += catItems.length;
-
-      const section = document.createElement("section");
-      const isOpenCat = isCatOpen(cat);
-      section.className = "category" + (isOpenCat ? " open" : "");
-
-      const head = document.createElement("button");
-      head.type = "button";
-      head.className = "category-head";
-      head.setAttribute("aria-expanded", isOpenCat ? "true" : "false");
-      const mCat = cat.nombre.match(/^(\d+)\.\s*(.*)$/);
-      head.innerHTML =
-        '<span class="cat-num">' +
-        (mCat ? mCat[1] : "•") +
-        "</span><h2>" +
-        (mCat ? mCat[2] : cat.nombre) +
-        '</h2><span class="count">' +
-        catItems.length +
-        (catItems.length === cat.total ? "" : " de " + cat.total) +
-        '</span><span class="cat-chev"></span>';
-      head.addEventListener("click", () => {
-        catOpenOverride.set(cat.nombre, !isCatOpen(cat));
-        render();
-      });
-      section.appendChild(head);
-
-      if (cat.base_legal) {
-        const basis = document.createElement("div");
-        basis.className = "category-basis";
-        basis.textContent = cat.base_legal;
-        section.appendChild(basis);
-      }
-
-      if (isOpenCat) {
-        let curSub = null;
-        catItems.forEach((it) => {
-          if (it.subcategoria && it.subcategoria !== curSub) {
-            curSub = it.subcategoria;
-            const subEl = document.createElement("div");
-            subEl.className = "subcategory-label";
-            subEl.textContent = curSub;
-            section.appendChild(subEl);
-          } else if (!it.subcategoria) {
-            curSub = null;
-          }
-
-          const wrap = document.createElement("div");
-          wrap.className = "item" + (openIds.has(it.id) ? " open" : "");
-          wrap.dataset.id = it.id;
-
-          const row = document.createElement("button");
-          row.className = "item-row";
-          row.setAttribute(
-            "aria-expanded",
-            openIds.has(it.id) ? "true" : "false",
-          );
-
-          const chev = document.createElement("span");
-          chev.className = "chev";
-          row.appendChild(chev);
-
-          const name = document.createElement("span");
-          name.className = "item-name";
-          name.innerHTML = highlight(it.detalle, q);
-          row.appendChild(name);
-
-          if (it.porcentaje_adicional && it.porcentaje_adicional !== "—") {
-            const pct = document.createElement("span");
-            pct.className = "pct-dot";
-            pct.textContent = "+ %";
-            row.appendChild(pct);
-          }
-
-          const amt = document.createElement("span");
-          amt.className = "amount";
-          amt.innerHTML = it.monto_la_paz_bs + '<span class="bs">Bs</span>';
-          row.appendChild(amt);
-
-          row.addEventListener("click", () => {
-            const isOpen = wrap.classList.toggle("open");
-            row.setAttribute("aria-expanded", isOpen ? "true" : "false");
-            if (isOpen) openIds.add(it.id);
-            else openIds.delete(it.id);
-          });
-
-          wrap.appendChild(row);
-
-          const detail = document.createElement("div");
-          detail.className = "item-detail";
-          // Pass CIVIL_DETAILS to the component
-          detail.innerHTML = buildDetailHtml(it, CIVIL_DETAILS); 
-          wrap.appendChild(detail);
-
-          section.appendChild(wrap);
-        });
-      }
-
-      catRoot.appendChild(section);
+    const counts = new Map();
+    const matched = new Map();
+    let total = 0;
+    categorias.forEach((c) => {
+      const list = items.filter((it) => it.categoria === c.nombre && matches(it));
+      matched.set(c.nombre, list);
+      counts.set(c.nombre, list.length);
+      total += list.length;
     });
+    updateChips(counts, total);
 
+    const frag = document.createDocumentFragment();
+    let shown = 0;
+    categorias.forEach((cat) => {
+      if (activeCat !== "Todos" && cat.nombre !== activeCat) return;
+      const catItems = matched.get(cat.nombre);
+      if (!catItems.length) return;
+      shown += catItems.length;
+      frag.appendChild(buildCategory(cat, catItems));
+    });
+    catRoot.innerHTML = "";
+    catRoot.appendChild(frag);
+
+    if (shown === 0) renderEmpty(total);
     emptyState.style.display = shown === 0 ? "block" : "none";
-    resultCount.textContent =
-      q || activeCat !== "Todos"
+
+    const filtering = toks.length > 0 || activeCat !== "Todos";
+    if (resultCount) {
+      resultCount.textContent = filtering
         ? shown + " de " + items.length
         : items.length + " conceptos";
+    }
+    if (clearBtn) clearBtn.hidden = rawQuery === "";
   }
 
-  searchInput.addEventListener("input", (e) => {
-    query = e.target.value;
+  /* ---------- Búsqueda ---------- */
+  function applyQuery() {
+    const prev = toks.join(" ");
+    rawQuery = searchInput.value;
+    toks = tokenize(rawQuery);
+    const changed = toks.join(" ") !== prev;
+    if (changed) catOpenOverride.clear();
     render();
+    if (changed) scrollToResults();
+  }
+
+  let timer = null;
+  searchInput.addEventListener("input", () => {
+    if (clearBtn) clearBtn.hidden = searchInput.value === "";
+    clearTimeout(timer);
+    timer = setTimeout(applyQuery, 90);
   });
+
+  searchInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      searchInput.blur(); // en el celular cierra el teclado para ver los resultados
+    } else if (e.key === "Escape" && searchInput.value) {
+      e.preventDefault();
+      clearSearch(false);
+    }
+  });
+
+  function clearSearch(focus) {
+    clearTimeout(timer);
+    searchInput.value = "";
+    applyQuery();
+    if (focus) searchInput.focus();
+  }
+
+  if (clearBtn) clearBtn.addEventListener("click", () => clearSearch(true));
+
+  emptyState.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-action]");
+    if (!btn) return;
+    if (btn.dataset.action === "clear") {
+      clearSearch(false);
+    } else if (btn.dataset.action === "all") {
+      activeCat = "Todos";
+      catOpenOverride.clear();
+      render();
+    }
+  });
+
+  // "/" enfoca el buscador (PC)
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "/" || e.ctrlKey || e.metaKey || e.altKey) return;
+    const tag = (document.activeElement && document.activeElement.tagName) || "";
+    if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag)) return;
+    e.preventDefault();
+    searchInput.focus();
+    searchInput.select();
+  });
+
+  /* ---------- Botón "volver arriba" ---------- */
+  const toTop = el("button", "to-top");
+  toTop.type = "button";
+  toTop.setAttribute("aria-label", "Volver arriba");
+  toTop.innerHTML =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>';
+  document.body.appendChild(toTop);
+  toTop.addEventListener("click", () => window.scrollTo({ top: 0, behavior: behavior() }));
+
+  let ticking = false;
+  window.addEventListener(
+    "scroll",
+    () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        toTop.classList.toggle("show", window.scrollY > 700);
+        ticking = false;
+      });
+    },
+    { passive: true },
+  );
+
+  // Aviso "Cómo usar": abierto en PC, cerrado en celular para ahorrar espacio.
+  if (notice && isWide()) notice.open = true;
 
   buildChips();
   render();
-})();
+}
+
+init();

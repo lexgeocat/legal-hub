@@ -4,10 +4,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>
-    Arancel Minimo de Honorarios Profesionales de la Abogacia, Departamento de
-    La Paz
-  </title>
+  <title>Arancel Mínimo de Honorarios Profesionales de la Abogacía – La Paz</title>
+  <meta name="description"
+    content="Honorarios mínimos profesionales de la abogacía del Departamento de La Paz, con búsqueda rápida y una guía de cada concepto." />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#efe7d8" />
+
+  <!-- Aplica el tema guardado antes de pintar (evita el parpadeo claro/oscuro) -->
+  <script src="js/theme-manager.js"></script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -23,7 +28,6 @@
 
   <!-- PWA: instalable en Android (Chrome) y en iOS -->
   <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#efe7d8" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -39,18 +43,8 @@
       <div class="wordmark">
         <h1>Arancel de <em>Honorarios</em></h1>
         <div class="wordmark-meta">
-          <span class="place">La Paz · Bs (bolivianos)</span>
-          <div class="install-wrap">
-            <button type="button" class="install-btn" id="installBtn" hidden>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                stroke-linejoin="round" aria-hidden="true">
-                <path d="M12 3v12M7 10l5 5 5-5M5 21h14" />
-              </svg>
-              Instalar
-            </button>
-            <div class="install-help" id="installHelp" hidden></div>
-          </div>
-          <button type="button" class="theme-toggle" id="themeToggle" aria-pressed="false" title="Cambiar tema">
+          <button type="button" class="theme-toggle" id="themeToggle" aria-pressed="false" title="Cambiar tema"
+            aria-label="Cambiar entre tema claro y oscuro">
             <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <circle cx="12" cy="12" r="4" />
@@ -64,57 +58,74 @@
           </button>
         </div>
       </div>
+      <p class="place-badge">Departamento de La Paz, montos en bolivianos (Bs)</p>
       <p class="subtitle">
         Honorarios mínimos profesionales por materia, con una guía de
         referencia rápida de qué es cada concepto y en qué casos se usa.
       </p>
     </header>
 
-    <div class="controls">
-      <div class="search-row">
-        <div class="search-box">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="7" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <input id="search" type="text" placeholder="Buscar por ejemplo: acción de libertad, divorcio, casación…"
-            autocomplete="off" />
+    <div class="layout">
+      <div class="controls" role="search">
+        <div class="search-row">
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="11" cy="11" r="7" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input id="search" type="text" inputmode="search" enterkeyhint="search"
+              placeholder="Buscar: divorcio, casación, amparo…" autocomplete="off" autocapitalize="off"
+              autocorrect="off" spellcheck="false" aria-label="Buscar un concepto o materia" />
+            <kbd class="kbd-hint" aria-hidden="true">/</kbd>
+            <button type="button" class="clear-btn" id="clearSearch" aria-label="Borrar búsqueda" hidden>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                aria-hidden="true">
+                <path d="M6 6l12 12M18 6L6 18" />
+              </svg>
+            </button>
+          </div>
+          <span class="result-count" id="resultCount" aria-live="polite"></span>
         </div>
-        <span class="result-count" id="resultCount"></span>
+        <div class="chip-row" id="chipRow" role="group" aria-label="Filtrar por materia"></div>
       </div>
-      <div class="chip-row" id="chipRow"></div>
+
+      <main class="content">
+        <details class="notice" id="notice">
+          <summary>Cómo usar esta guía y de dónde salen los datos</summary>
+          <p>
+            <strong>Cómo usarla:</strong> toca o haz clic en cualquier concepto
+            para ver qué es y cuándo se aplica, junto con el honorario mínimo
+            fijado para La Paz y la regla porcentual adicional, cuando
+            corresponde. En el buscador puedes escribir varias palabras a la vez.
+          </p>
+          <p>
+            <strong>Origen:</strong> los montos, materias y reglas de porcentaje
+            vienen tal cual del documento "Arancel Mínimo de Honorarios
+            Profesionales de la Abogacía, Departamento de La Paz", aprobado
+            (actualización) mediante R.M. N.º 210/2025 del 25 de octubre de 2025.
+          </p>
+        </details>
+
+        <div id="categories"></div>
+
+        <div class="empty-state" id="emptyState" style="display: none"></div>
+
+        <footer class="site">
+          Basado en el "Arancel Mínimo de Honorarios Profesionales de la Abogacía"
+          (La Paz), R.M. N.º 210/2025.
+        </footer>
+      </main>
     </div>
-
-    <div class="notice">
-      <p>
-        <strong>Cómo usar esto:</strong> hacé clic sobre cualquier concepto
-        para desplegar una explicación breve de qué es y cuándo se aplica,
-        junto con el honorario mínimo fijado para La Paz y la regla porcentual
-        adicional, cuando corresponde.
-      </p>
-      <p>
-        <strong>Nota sobre el origen:</strong> los montos, materias y reglas
-        de porcentaje vienen tal cual del documento "Arancel Minimo de
-        Honorarios Profesionales de la Abogacia, Departamento de La Paz",
-        aprobado (actualizacion) mediante R.M. Nº 210/2025 del 25 de octubre
-        de 2025.
-      </p>
-    </div>
-
-    <div id="categories"></div>
-
-    <div class="empty-state" id="emptyState" style="display: none">
-      Sin resultados para esa búsqueda.
-    </div>
-
-    <footer class="site">
-      Basado en el "Arancel Minimo de Honorarios Profesionales de la Abogacia"
-      (La Paz)
-    </footer>
   </div>
 
-  <script src="js/theme-manager.js"></script>
+  <noscript>
+    <p style="padding: 24px; text-align: center">
+      Esta guía necesita JavaScript activado para mostrar los honorarios.
+    </p>
+  </noscript>
+
   <script type="module" src="js/main.js"></script>
+  <script type="module" src="js/pwa.js"></script>
 </body>
 
 </html>
