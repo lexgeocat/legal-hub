@@ -1,0 +1,453 @@
+/* ==== mejoras-ui.css — cargar DESPUÉS de styles.css ==== */
+
+:root {
+  --ok: #2f6b4a;
+  --ph-exec: #a4481f;
+  --tint-maroon: color-mix(in srgb, var(--maroon) 9%, transparent);
+  --tint-brass: color-mix(in srgb, var(--brass) 15%, transparent);
+  --lift: 0 2px 10px rgba(33, 28, 22, 0.1);
+}
+:root[data-theme="dark"] {
+  --ok: #6fbf93;
+  --ph-exec: #e0915f;
+  --lift: 0 2px 12px rgba(0, 0, 0, 0.5);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ok: #6fbf93;
+    --ph-exec: #e0915f;
+    --lift: 0 2px 12px rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* ---------- Cabecera y buscador ---------- */
+header.top {
+  padding: 28px 0 20px;
+  border-bottom: 2px solid var(--maroon);
+}
+.wordmark h1 {
+  font-size: clamp(28px, 5vw, 38px);
+}
+.subtitle {
+  font-size: 15.5px;
+  margin-top: 8px;
+}
+.controls {
+  padding: 12px 0 10px;
+  box-shadow: 0 8px 10px -10px rgba(0, 0, 0, 0.4);
+}
+.search-box svg {
+  left: 15px;
+  width: 18px;
+  height: 18px;
+}
+.search-box input {
+  padding: 14px 16px 14px 44px;
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+}
+.search-box input:focus {
+  outline: none;
+  border-color: var(--brass);
+  box-shadow: 0 0 0 3px var(--tint-brass);
+}
+.chip {
+  padding: 8px 15px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.notice {
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+/* ---------- Materias (acordeón principal) ---------- */
+.category {
+  margin-top: 22px;
+}
+.category-head {
+  gap: 12px;
+  padding: 13px 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--paper-raised);
+  margin: 0;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+.category-head:hover {
+  border-color: var(--maroon-soft);
+}
+.category.open .category-head {
+  background: var(--tint-maroon);
+  border-color: var(--maroon-soft);
+}
+.cat-num {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--maroon);
+  color: var(--chip-active-fg);
+  font: 600 15px "Fraunces", serif;
+}
+.category-head h2 {
+  font-size: 19px;
+}
+.category-head .count {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--tint-brass);
+  color: var(--brass);
+  font-weight: 600;
+}
+.category-basis {
+  margin: 10px 4px 12px;
+  font-style: normal;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.subcategory-label {
+  margin: 22px 2px 8px;
+  padding-left: 10px;
+  border-left: 3px solid var(--brass);
+  font-size: 14px;
+}
+
+/* ---------- Conceptos como tarjetas ---------- */
+.item {
+  margin: 0 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper-raised);
+  overflow: hidden;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+.item:hover {
+  border-color: var(--brass);
+}
+.item.open {
+  border-color: var(--maroon-soft);
+  box-shadow: var(--lift);
+}
+.item-row {
+  padding: 14px 16px;
+  min-height: 56px;
+}
+.item-row:hover {
+  background: transparent;
+}
+.item.open .item-row {
+  background: var(--tint-maroon);
+}
+.item-row:focus-visible {
+  outline-offset: -3px;
+}
+.item-name {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+.pct-dot {
+  padding: 2px 8px;
+  border-color: transparent;
+  background: var(--tint-maroon);
+  color: var(--maroon-soft);
+  font-weight: 600;
+}
+.amount {
+  min-width: 0;
+  padding: 5px 10px;
+  border-radius: 6px;
+  background: var(--tint-brass);
+  font-size: 15.5px;
+  font-weight: 700;
+}
+.item-detail,
+.civil-detail {
+  padding: 16px;
+}
+.item-detail {
+  border-top: 1px solid var(--line);
+  background: var(--paper);
+}
+.item.open .item-detail {
+  animation: abrir 0.18s ease;
+}
+@keyframes abrir {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+.civil-detail {
+  padding: 0;
+}
+
+/* ---------- Detalle general (materias sin ficha) ---------- */
+.d-grid,
+.civil-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.d-card,
+.c-card {
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--paper-raised);
+}
+.d-card h4,
+.c-card h4 {
+  margin: 0 0 6px;
+  font: italic 500 15px "Fraunces", serif;
+  color: var(--maroon-soft);
+}
+.d-card p,
+.c-card p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+.d-fee,
+.c-card.wide {
+  grid-column: 1 / -1;
+}
+
+/* ---------- Ficha profesional civil ---------- */
+.civil-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.civil-badge {
+  margin: 0;
+  padding: 4px 11px;
+  font-size: 12px;
+}
+.civil-stats {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.stat {
+  padding: 3px 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper-raised);
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+.stat b {
+  color: var(--brass);
+  font-variant-numeric: tabular-nums;
+}
+.c-card.hero {
+  border-left: 4px solid var(--maroon-soft);
+}
+.c-card.hero p {
+  font-size: 15.5px;
+  color: var(--ink);
+}
+.civil-caveat {
+  margin: 16px 2px 0;
+}
+
+/* ---------- Tarjetas de honorario ---------- */
+.fee-box {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.d-fee .fee-box {
+  margin-top: 0;
+}
+.fee-tile {
+  flex: 1 1 200px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--brass);
+  border-radius: 6px;
+  background: var(--paper);
+}
+.d-fee .fee-tile {
+  background: var(--paper-raised);
+}
+.fee-tile .k {
+  display: block;
+  font-size: 13px;
+  color: var(--ink-faint);
+}
+.fee-tile .v {
+  display: block;
+  margin-top: 2px;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--brass);
+  font-variant-numeric: tabular-nums;
+}
+.fee-tile.extra {
+  border-left-color: var(--maroon-soft);
+}
+.fee-tile.extra .v {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--ink);
+}
+
+/* ---------- Flujograma ---------- */
+.flow {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+.flow-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 14px;
+  padding-bottom: 16px;
+}
+.flow-step:last-child {
+  padding-bottom: 0;
+}
+.flow-step:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 17px;
+  top: 38px;
+  bottom: 7px;
+  width: 2px;
+  background: linear-gradient(var(--maroon-soft), var(--line));
+}
+.flow-step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 11px;
+  bottom: 0;
+  border-style: solid;
+  border-width: 7px 6px 0;
+  border-color: var(--line) transparent transparent;
+}
+.flow-num {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--maroon);
+  color: var(--chip-active-fg);
+  font: 600 15px "Fraunces", serif;
+  box-shadow: 0 0 0 4px var(--paper-raised);
+  z-index: 1;
+}
+.flow-step.start .flow-num {
+  background: var(--brass);
+}
+.flow-step.end .flow-num {
+  background: var(--ok);
+}
+.flow-card {
+  padding: 10px 14px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+}
+.flow-step.start .flow-card {
+  border-color: var(--brass);
+}
+.flow-step.end .flow-card {
+  border-color: var(--ok);
+}
+.flow-card p {
+  margin: 6px 0 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink);
+}
+.flow-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.phase {
+  --c: var(--ink-soft);
+  padding: 1px 9px;
+  border: 1px solid color-mix(in srgb, var(--c) 35%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--c) 12%, transparent);
+  color: var(--c);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.ph-prep { --c: var(--brass); }
+.ph-pres { --c: var(--maroon-soft); }
+.ph-noti { --c: var(--ink-soft); }
+.ph-aud { --c: var(--focus); }
+.ph-res { --c: var(--ok); }
+.ph-exec { --c: var(--ph-exec); }
+.flow-flag {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.step-of {
+  margin-left: auto;
+  font-size: 12.5px;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Móvil ---------- */
+@media (max-width: 640px) {
+  .d-grid,
+  .civil-grid {
+    grid-template-columns: 1fr;
+  }
+  .item-row {
+    padding: 14px 12px;
+  }
+  .item-detail {
+    padding: 12px;
+  }
+  .amount {
+    font-size: 15px;
+    padding: 4px 8px;
+  }
+  .flow-step {
+    grid-template-columns: 32px minmax(0, 1fr);
+    gap: 10px;
+  }
+  .flow-num {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+  .flow-step:not(:last-child)::before {
+    left: 15px;
+    top: 34px;
+  }
+  .flow-step:not(:last-child)::after {
+    left: 9px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item.open .item-detail {
+    animation: none;
+  }
+  * {
+    transition: none !important;
+  }
+}

@@ -1,0 +1,21 @@
+/* ---------- Notice ---------- */
+.notice {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--brass);
+  background: var(--paper-raised);
+  border-radius: 4px;
+  font-size: 13.5px;
+  color: var(--ink-soft);
+  line-height: 1.55;
+}
+.notice strong {
+  color: var(--ink);
+}
+.notice p {
+  margin: 0 0 6px;
+}
+.notice p:last-child {
+  margin-bottom: 0;
+}

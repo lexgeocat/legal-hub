@@ -1,0 +1,233 @@
+/* ---------- Category sections ---------- */
+.category {
+  margin-top: 38px;
+}
+.category-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  border-bottom: 1px solid var(--maroon);
+  padding: 6px 2px 8px 2px;
+  margin: 0 0 4px;
+}
+.cat-chev {
+  flex: 0 0 auto;
+  width: 9px;
+  height: 9px;
+  border-right: 1.5px solid var(--maroon-soft);
+  border-bottom: 1.5px solid var(--maroon-soft);
+  transform: rotate(-45deg);
+  transition: transform 0.15s ease;
+}
+.category.open .cat-chev {
+  transform: rotate(45deg);
+}
+.category-head h2 {
+  flex: 1;
+  min-width: 0;
+  font-family: "Fraunces", serif;
+  font-weight: 600;
+  font-size: 19px;
+  margin: 0;
+  color: var(--maroon-soft);
+  letter-spacing: -0.01em;
+}
+.category-head .count {
+  font-size: 12.5px;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.category-basis {
+  font-size: 12.5px;
+  color: var(--ink-faint);
+  font-style: italic;
+  margin: 6px 0 10px;
+}
+
+.subcategory-label {
+  font-size: 12.5px;
+  text-transform: none;
+  color: var(--brass);
+  font-weight: 600;
+  margin: 18px 0 2px;
+  letter-spacing: 0.01em;
+}
+
+/* ---------- Item rows ---------- */
+.item {
+  border-bottom: 1px solid var(--line-soft);
+}
+.item-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 2px;
+  text-align: left;
+}
+.item-row:hover {
+  background: var(--paper-raised);
+}
+.chev {
+  flex: 0 0 auto;
+  width: 9px;
+  height: 9px;
+  border-right: 1.5px solid var(--ink-faint);
+  border-bottom: 1.5px solid var(--ink-faint);
+  transform: rotate(-45deg);
+  transition: transform 0.15s ease;
+  margin-right: 2px;
+}
+.item.open .chev {
+  transform: rotate(45deg);
+}
+
+.item-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 15px;
+  color: var(--ink);
+}
+.item-name .hl {
+  background: rgba(147, 115, 47, 0.28);
+  border-radius: 2px;
+}
+:root[data-theme="dark"] .item-name .hl {
+  background: rgba(210, 178, 95, 0.28);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .item-name .hl {
+    background: rgba(210, 178, 95, 0.28);
+  }
+}
+
+.pct-dot {
+  flex: 0 0 auto;
+  font-size: 11px;
+  color: var(--brass);
+  border: 1px solid var(--brass);
+  border-radius: 999px;
+  padding: 1px 7px;
+  white-space: nowrap;
+}
+.dup-flag {
+  flex: 0 0 auto;
+  font-size: 11px;
+  color: var(--ink-faint);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 1px 7px;
+  white-space: nowrap;
+}
+
+.amount {
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--brass);
+  font-size: 15px;
+  white-space: nowrap;
+  min-width: 84px;
+  text-align: right;
+}
+.amount .bs {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-faint);
+  margin-left: 3px;
+}
+
+.item-detail {
+  display: none;
+  padding: 4px 2px 20px 21px;
+  font-size: 14.5px;
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+.item.open .item-detail {
+  display: block;
+}
+.item-detail .block {
+  margin-bottom: 12px;
+}
+.item-detail .block:last-child {
+  margin-bottom: 0;
+}
+.item-detail .label {
+  display: block;
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 13.5px;
+  color: var(--maroon-soft);
+  margin-bottom: 3px;
+}
+.item-detail .fee-line {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding-top: 10px;
+  margin-top: 10px;
+  border-top: 1px dashed var(--line);
+  font-size: 13.5px;
+}
+.item-detail .fee-line .k {
+  color: var(--ink-faint);
+}
+.item-detail .fee-line .v {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.empty-state {
+  padding: 48px 4px;
+  text-align: center;
+  color: var(--ink-faint);
+  font-size: 14.5px;
+}
+
+footer.site {
+  margin-top: 56px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  font-size: 12.5px;
+  color: var(--ink-faint);
+  line-height: 1.6;
+}
+
+@media (max-width: 560px) {
+  .amount {
+    min-width: 68px;
+    font-size: 14px;
+  }
+  .item-name {
+    font-size: 14.5px;
+  }
+  .wordmark {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+  .wordmark-meta {
+    margin-top: 2px;
+  }
+  .item-row {
+    padding: 14px 2px;
+  }
+  .chip {
+    padding: 8px 14px;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .theme-toggle {
+    width: 36px;
+    height: 36px;
+  }
+  .install-btn {
+    padding: 8px 14px;
+  }
+}

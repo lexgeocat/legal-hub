@@ -1,0 +1,137 @@
+/* 
+  TEMA OSCURO / CLARO
+  El modo claro es el predeterminado (:root).
+  El modo oscuro se activa mediante el atributo [data-theme="dark"] en el <html> o <body>.
+*/
+
+:root {
+  --paper: #efe7d8;
+  --paper-raised: #f8f3e8;
+  --ink: #211c16;
+  --ink-soft: #6b5d48;
+  --ink-faint: #948567;
+  --maroon: #5b1220;
+  --maroon-soft: #7a2434;
+  --brass: #93732f;
+  --line: #d9cbae;
+  --line-soft: #e4d9c2;
+  --chip-bg: #f8f3e8;
+  --chip-active-bg: #5b1220;
+  --chip-active-fg: #f3e9d6;
+  --focus: #2e5c8a;
+  --shadow: none;
+}
+
+/* 
+  Soporte para preferencia del sistema (OS Dark Mode)
+  Solo aplica si el usuario NO ha forzado un tema manualmente.
+*/
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #1b1712;
+    --paper-raised: #241f18;
+    --ink: #ede3d0;
+    --ink-soft: #b7a98c;
+    --ink-faint: #8a7c63;
+    --maroon: #c9576a;
+    --maroon-soft: #a9435a;
+    --brass: #d2b25f;
+    --line: #3a3225;
+    --line-soft: #2c271d;
+    --chip-bg: #241f18;
+    --chip-active-bg: #c9576a;
+    --chip-active-fg: #201013;
+    --focus: #7fb0e8;
+  }
+}
+
+/* 
+  Forzado manual de Tema Oscuro
+*/
+[data-theme="dark"] {
+  --paper: #1b1712;
+  --paper-raised: #241f18;
+  --ink: #ede3d0;
+  --ink-soft: #b7a98c;
+  --ink-faint: #8a7c63;
+  --maroon: #c9576a;
+  --maroon-soft: #a9435a;
+  --brass: #d2b25f;
+  --line: #3a3225;
+  --line-soft: #2c271d;
+  --chip-bg: #241f18;
+  --chip-active-bg: #c9576a;
+  --chip-active-fg: #201013;
+  --focus: #7fb0e8;
+}
+
+/* 
+  Forzado manual de Tema Claro
+*/
+[data-theme="light"] {
+  --paper: #efe7d8;
+  --paper-raised: #f8f3e8;
+  --ink: #211c16;
+  --ink-soft: #6b5d48;
+  --ink-faint: #948567;
+  --maroon: #5b1220;
+  --maroon-soft: #7a2434;
+  --brass: #93732f;
+  --line: #d9cbae;
+  --line-soft: #e4d9c2;
+  --chip-bg: #f8f3e8;
+  --chip-active-bg: #5b1220;
+  --chip-active-fg: #f3e9d6;
+  --focus: #2e5c8a;
+}
+
+* {
+  box-sizing: border-box;
+}
+html {
+  scroll-padding-top: env(safe-area-inset-top, 0px);
+}
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family:
+    "Source Sans 3",
+    system-ui,
+    -apple-system,
+    sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+::selection {
+  background: var(--brass);
+  color: var(--paper-raised);
+}
+
+a {
+  color: inherit;
+}
+
+button {
+  font-family: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.wrap {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 0 20px 64px;
+}
